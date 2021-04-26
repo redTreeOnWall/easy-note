@@ -1,0 +1,2 @@
+# easy-note
+easy note

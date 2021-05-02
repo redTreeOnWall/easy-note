@@ -1,13 +1,16 @@
 package com.lirunlong.net.http;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
 import javax.net.ssl.SSLException;
 
+import com.lirunlong.net.tool.Session;
 import com.lirunlong.thread.ThreadPool;
+import com.lirunlong.util.Log;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -55,7 +58,7 @@ public class HttpServer {
         public static final String COOKIE = "Cookie";
     }
 
-    public Map sessionMap;
+    public final Map<String, Session> sessionMap = new Hashtable<>();
 
     public interface GetHttpHandle {
         public HttpHandle HttpHandle();
@@ -68,7 +71,6 @@ public class HttpServer {
     public HttpServer(int port) {
         this.port = port;
         threadPool = new ThreadPool(100, 10000);
-        sessionMap = new Hashtable<>();
     }
 
     public HttpServer addRout(String uri, HttpRoutHandle h) {
@@ -83,16 +85,37 @@ public class HttpServer {
     }
 
     public void start(GetHttpHandle getHandle) {
+      
 
-        final SslContext sslCtx;
-        File file = new File("/root/leefile/key/2941847_lirunlong.com_other/2941847_lirunlong.com.pem");
-        File key = new File("/root/leefile/key/2941847_lirunlong.com_tomcat/server.key");
-        try {
-            sslCtx = SslContextBuilder.forServer(file, key).build();
-        } catch (SSLException e) {
-            e.printStackTrace();
-            return;
-        }
+        // manage session
+        this.threadPool.addTask(() -> {
+
+          while(true) {
+            var time = System.currentTimeMillis();
+
+            var sessionToRemove = new ArrayList<String>();
+            this.sessionMap.forEach( (key, val) -> {
+              if(val.lastActiveTime - time >= 1000  * 60 /* * 60 */ * 12){
+                sessionToRemove.add(key);
+              }
+            });
+
+            sessionToRemove.forEach( key -> {
+              this.sessionMap.remove(key);
+            });
+
+            Log.info("update session");
+
+            try {
+              Thread.sleep(1000 * 3);
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
+          }
+          
+        });
+
+        final SslContext sslCtx = null;
 
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();

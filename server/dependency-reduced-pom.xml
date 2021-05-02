@@ -60,6 +60,7 @@
   </dependencies>
   <properties>
     <main.class>com.lirunlong.main.MainClass</main.class>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 </project>
 

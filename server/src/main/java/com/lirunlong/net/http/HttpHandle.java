@@ -50,7 +50,7 @@ public abstract class HttpHandle extends ChannelInboundHandlerAdapter { // 1
             e.printStackTrace();
         }
         response.headers().set(CONTENT_TYPE, "text/plain");
-        response.headers().set("Access-Control-Allow-Origin", "*");
+       // response.headers().set("Access-Control-Allow-Origin", "*");
         response.headers().set(CONTENT_LENGTH,
                 response.content().readableBytes());
         if (HttpHeaders.isKeepAlive(request)) {

@@ -19,9 +19,9 @@ public class ThreadPool {
     // public synchronized boolean addTask(Runnable runnable) {
     public boolean addTask(Runnable runnable) {
         if (threadPool.size() < workerMax) {
-            Thread newWorkerTHread = new Thread(new ThreadPoolWorker(this));
-            newWorkerTHread.start();
-            threadPool.add(newWorkerTHread);
+            Thread newWorkerThread = new Thread(new ThreadPoolWorker(this));
+            newWorkerThread.start();
+            threadPool.add(newWorkerThread);
         }
         return taskQueue.offer(runnable);
     }

@@ -1,24 +1,32 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {useState} from 'react';
+import CreateNote from './components/CreateNote';
+import NoteList from './components/NoteList';
+import { Button, Fab } from '@material-ui/core';
+import { Add } from '@material-ui/icons';
 
-function App() {
+
+import style from './App.module.css';
+
+
+const App: React.FC = () => {
+
+  const [ showCreate , setShowCreate] = useState<boolean>(false);
+
+  const handleAddClickled = () => {
+    setShowCreate(true);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className={style.app}>
+      <NoteList/>
+
+      <Fab color="primary" onClick={ handleAddClickled }>
+        <Add/>
+      </Fab>
+
+      { 
+        showCreate ?  <CreateNote /> : null
+      }
     </div>
   );
 }

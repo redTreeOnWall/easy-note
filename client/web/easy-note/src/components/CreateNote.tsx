@@ -13,6 +13,7 @@ const CreateNote: React.FC = () => {
 
   const handleSave = () => {
     console.log('saved');
+    console.log(value);
   };
 
   return (

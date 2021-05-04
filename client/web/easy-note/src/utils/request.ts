@@ -1,7 +1,20 @@
 
-export interface RequestData{};
 
-const request = async (url: string, data?: RequestData  ) => {
+export interface RequestData{
+  actionId: string;
+  sessionId: string;
+  body: any;
+};
+
+export interface ResponseData<T>{
+  isSuccess: boolean;
+  erroCode: 'needLogin' | 'err'
+  body: T;
+};
+
+const url = 'http://localhost:6060/note';
+
+const request = async <T>(data?: RequestData) => {
 	const response = await fetch(url, {
 		method: 'POST', 
 		cache: 'no-cache', 
@@ -10,7 +23,7 @@ const request = async (url: string, data?: RequestData  ) => {
 		},
 		body: JSON.stringify(data)
 	});
-	return response.json();
+	const responseData = await (response.json() as Promise<ResponseData<T>>);
 } 
 
 export default  request;

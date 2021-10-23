@@ -17,7 +17,7 @@
 
 ### 运行:
 ``` shell
-mvn -DskipTest compile exec:java -Dexec.args="address password"
+mvn -DskipTest compile exec:java
 ```
 
 ### 打包

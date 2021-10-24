@@ -59,8 +59,8 @@ public class MainClass {
   public static void start(String[] args) throws Exception{
   
     System.out.println("please input the address of database");
-    // var DBAddress = System.console().readLine();
-    var DBAddress = "redtree.com";
+    var DBAddress = System.console().readLine();
+    // var DBAddress = "redtree.com";
 
     System.out.println("please input the password of database");
     var DBPassWord = new String(System.console().readPassword());

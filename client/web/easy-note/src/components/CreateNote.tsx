@@ -1,24 +1,34 @@
-import React, {useState} from 'react';
-import { Button, TextField , Fab } from '@material-ui/core';
-import { Save } from '@material-ui/icons';
+import React, {useEffect, useState} from 'react';
+import {Button, TextField, Fab} from '@mui/material';
+import {Save} from '@mui/icons-material';
 import style from './CreateNote.module.css';
+import request, {ActionId} from '../utils/request';
 
-const CreateNote: React.FC = () => {
+export interface CreateProps{
+  onConfirm: (text: string) =>void;
+  textFieldValue: string;
+}
 
-  const [value, setValue] = useState<string>("");
+const CreateNote: React.FC<CreateProps> = (props) => {
 
-  const handleValueChange : React.ChangeEventHandler<HTMLTextAreaElement| HTMLInputElement> = event => {
+  const [value, setValue] = useState<string>('');
+
+  useEffect(() => {
+    setValue(props.textFieldValue);
+  },[props.textFieldValue]);
+
+  const handleValueChange: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement> = event => {
     setValue(event.target.value);
   };
 
-  const handleSave = () => {
-    console.log('saved');
-    console.log(value);
+  const handleSave = async () => {
+   props.onConfirm(value);
   };
 
   return (
     <div className={style.createNote}>
       <div className={style.createNoteInner}>
+
         <TextField
           label=""
           multiline
@@ -28,18 +38,14 @@ const CreateNote: React.FC = () => {
         />
 
       </div>
-      <Fab
-        style={{
-          position: 'fixed',
-          bottom: '16px',
-          right: '16px',
-        }}
-        color="primary"
-        onClick={ handleSave }
-        className={style.fab}
-      >
-        <Save/>
-      </Fab>
+      
+      <Button
+        style={{width: '90%', margin: '20px 5%'}}
+        variant="contained"
+        onClick={handleSave}
+        >
+        <Save />
+      </Button>
     </div>
   );
 }

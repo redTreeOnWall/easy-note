@@ -1,32 +1,76 @@
 import React, {useState, useEffect} from 'react';
 import CreateNote from './components/CreateNote';
 import NoteList from './components/NoteList';
-import { Button, Fab, Dialog } from '@material-ui/core';
-import { Add } from '@material-ui/icons';
+import { Button, Fab, Dialog, TextField } from '@mui/material';
+import { Add } from '@mui/icons-material';
+import { Login } from './components/Login';
 
 
 import style from './App.module.css';
-import {Data, Module} from './module/data';
+import {DataManager, Data} from './module/data';
+import {login} from './service/NoteService';
+import request, {ActionId} from './utils/request';
 
+
+
+    
+const sId = window.localStorage.getItem('sessionId');
+if(sId !== null) {
+  DataManager.getInstance().data.userInfo = {
+    userName: '',
+    password: '',
+    sessionId: sId,
+  }
+}
+    
 
 const App: React.FC = () => {
 
   const [ showCreate , setShowCreate] = useState<boolean>(false);
   const [ showLogin , setShowLogin] = useState<boolean>(false);
 
-  useEffect(
-    () => {
-      const onDataChanged = (data:Data) => {
-        const needLogin = Module.getInstance().data.userInfo === undefined;
+  useEffect( () => {
+
+    const onDataChanged = async (data:Data) => {
+      const moduleIns = DataManager.getInstance();
+      const needLogin = moduleIns.data.userInfo?.sessionId === undefined;
+      if (needLogin ) {
+        // try to auto login
+        if(
+          moduleIns.data.userInfo?.password !== undefined && 
+          moduleIns.data.userInfo?.userName !== undefined
+        ) {
+          const res = await login(moduleIns.data.userInfo.userName as string, moduleIns.data.userInfo.password as string);
+          if(res !== null && res.isSuccess) {
+            moduleIns.changeData((d) => {
+              if(d.userInfo !== undefined && res.body.sessionId !== undefined) {
+                d.userInfo.sessionId = res.body.sessionId;
+                window.localStorage.setItem('sessionId', res.body.sessionId)
+              }
+            });
+          } else {
+            alert('login faild');
+            moduleIns.changeData((d) => {
+              d.userInfo=undefined;
+            });
+          }
+        } else {
+          setShowLogin(true);
+        }
+      } else {
         setShowLogin(needLogin);
-      };
-      Module.getInstance().onDataChanged.add(onDataChanged);
-      return () => {
-        Module.getInstance().onDataChanged.remove(onDataChanged);
       }
-    },
-    []
-  );
+
+    };
+
+    DataManager.getInstance().onDataChanged.add(onDataChanged);
+
+    onDataChanged(DataManager.getInstance().data);
+
+    return () => {
+      DataManager.getInstance().onDataChanged.remove(onDataChanged);
+    }
+  }, []);
 
   const handleAddClickled = () => {
     setShowCreate(true);
@@ -34,7 +78,7 @@ const App: React.FC = () => {
 
   return (
     <div className={style.app}>
-      <NoteList/>
+      { showLogin ? null : <NoteList/>}
 
       <Fab
         style={{
@@ -48,28 +92,30 @@ const App: React.FC = () => {
       <Add/>
       </Fab>
 
-      { 
-        showCreate ?  <CreateNote /> : null
-      }
+      { showCreate ?  
+        <CreateNote
+          onConfirm={ async (text) => {
+            if (text === '') {
+              return;
+            }
 
-      <Dialog
-        open={showLogin}
-        fullScreen
-      >
-        a tet
-        <Button
-          onClick={() =>{
-            Module.getInstance().changeData( d => {
-              d.userInfo={
-                userName: 'name',
-                password: 'pp',
-                sessionId: 's',
-              };
+            const res = await request({
+              actionId: ActionId.ADD_NOTE,
+              body: {
+                content: text 
+              }
             });
+            
+            if(res?.isSuccess) {
+              setShowCreate(false);
+              DataManager.getInstance().updateNoteList();
+            }
           }}
-        >close</Button>
-      </Dialog>
+          textFieldValue=""
+        />
+      : null }
 
+      { <Login showLogin={showLogin} />}
 
     </div>
   );

@@ -1,22 +1,25 @@
+import {getNoteList} from "../service/NoteService";
 import {Action} from "../utils/Action";
+import {NoteData} from "../utils/request";
 
 
 export interface Data{
   userInfo?: {
     userName: string;
     password: string;
-    sessionId: string;
+    sessionId?: string;
   };
+  noteList?: NoteData[]
 }
 
-export class Module{
+export class DataManager{
 
-  static instance: Module| null = null;
+  static instance: DataManager| null = null;
   static getInstance(){
-    if(Module.instance === null){
-      Module.instance = new Module();
+    if(DataManager.instance === null){
+      DataManager.instance = new DataManager();
     }
-    return Module.instance;
+    return DataManager.instance;
   }
 
   // datas
@@ -31,6 +34,15 @@ export class Module{
 
 
   onDataChanged = new Action<Data>();
+
+  async updateNoteList() {
+    const res = await getNoteList();
+    if(res?.isSuccess){
+      this.changeData((d) => {
+        d.noteList = res.body.noteList;
+      });
+    }
+  }
 
 }
 
